@@ -4,11 +4,14 @@
 
 # If only size is defined, then define the individual side
 # lengths to be that size.
+
+# For now, always assume sizeZ = 2
+
 ifdef size
 
 sizeX=$(size)
 sizeY=$(size)
-sizeZ=$(size)
+sizeZ=2
 
 endif
 
