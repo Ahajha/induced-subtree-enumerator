@@ -172,7 +172,7 @@ void branch(int id, Subtree& S, std::list<vertexID>& border,
 	// since any children of this tree would be better candidates.
 	if (border.empty())
 	{
-		if (S.numInduced > largestTree)
+		if (S.numInduced > largestTree && S.connectedToColumns())
 		{
 			checkCandidate(S);
 		}

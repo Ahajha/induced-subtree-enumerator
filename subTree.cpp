@@ -49,15 +49,22 @@ int _north(int i) { return (get_y(i) == SIZEY - 1) ? EMPTY : i + SIZEX;         
 int _down (int i) { return (get_z(i) == 0)         ? EMPTY : i - (SIZEX*SIZEY); }
 int _up   (int i) { return (get_z(i) == SIZEZ - 1) ? EMPTY : i + (SIZEX*SIZEY); }
 
+// For the checkerboard branch, return true if the x or y is on the outer shell.
 bool onOuterShell(vertexID i)
 {
 	// If i has an 'empty' neighbor, then it is
 	// on the outer shell.
+	/*
 	for (vertexID x : G.vertices[i].neighbors)
 	{
 		if (x == EMPTY) return true;
 	}
-	return false;
+	*/
+	return
+		G.vertices[i].neighbors[NORTH] == EMPTY ||
+		G.vertices[i].neighbors[SOUTH] == EMPTY ||
+		G.vertices[i].neighbors[EAST ] == EMPTY ||
+		G.vertices[i].neighbors[WEST ] == EMPTY;
 }
 
 Graph::Graph()
@@ -72,6 +79,14 @@ Graph::Graph()
 		
 		vertices[i].neighbors[DOWN ] = _down (i);
 		vertices[i].neighbors[UP   ] = _up   (i);
+	}
+	
+	/* IMPORTANT: the += 2 idea only works for odds */
+	
+	for (vertexID i = 1; i < (numVertices/2); i += 2)
+	{
+		vertices[i].neighbors[UP] = EMPTY;
+		vertices[_up(i)].neighbors[DOWN] = EMPTY;
 	}
 }
 
@@ -124,7 +139,7 @@ bool Subtree::add(vertexID i)
 	{
 		if (exists(x))
 		{
-			if (validate(x))
+			if (validate(x) && doesNotEnclose(x))
 			{
 				return true;
 			}
@@ -208,8 +223,43 @@ bool Subtree::validate(vertexID i) const
 		( exists(_down (i)) || exists(_up   (i)) );
 }
 
+bool Subtree::connectedToColumns() const
+{
+	// Start at the first position that would have a pillar
+	for (vertexID i = 0; i < (numVertices/2); i += 2)
+	{
+		if (!has(i) && !has(_up(i))) return false;
+	}
+	
+	return true;
+}
+
+// For checkerboard graphs, we can just check if
+// the block beneath/above it exists or not.
+bool Subtree::doesNotEnclose(vertexID i) const
+{
+	if (onOuterShell(i)) return true;
+	
+	if (i < (numVertices/2))
+	{
+		return (i % 2 == 0) || !has(_up(i));
+	}
+	else
+	{
+		return (i % 2 == 1) || !has(_down(i));
+	}
+}
+
 bool Subtree::hasEnclosedSpace() const
 {
+	// Start at the first position that would not have a pillar
+	for (vertexID i = 1; i < (numVertices/2); i += 2)
+	{
+		if (!onOuterShell(i) && has(i) && has(_up(i))) return true;
+	}
+	
+	return false;
+	/*
 	// enum to mark each vertex
 	enum label { induced, empty, empty_connected };
 	
@@ -260,4 +310,5 @@ bool Subtree::hasEnclosedSpace() const
 	// If the graph has enclosed space, then there will
 	// be vertices not accounted for in this formula
 	return numInduced + numConnected != numVertices;
+	*/
 }

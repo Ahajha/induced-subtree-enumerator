@@ -68,6 +68,10 @@ struct Subtree
 	// We need to check its neighbor.
 	bool validate(vertexID i) const;
 	
+	bool connectedToColumns() const;
+	
+	bool doesNotEnclose(vertexID i) const;
+	
 	// Returns true iff there is at least one block whose
 	// faces cannot be accessed externally.
 	bool hasEnclosedSpace() const;
