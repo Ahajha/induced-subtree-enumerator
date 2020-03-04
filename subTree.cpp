@@ -49,8 +49,7 @@ int _north(int i) { return (get_y(i) == SIZEY - 1) ? EMPTY : i + SIZEX;         
 int _down (int i) { return (get_z(i) == 0)         ? EMPTY : i - (SIZEX*SIZEY); }
 int _up   (int i) { return (get_z(i) == SIZEZ - 1) ? EMPTY : i + (SIZEX*SIZEY); }
 
-/* IMPORTANT: the += 2 idea only works for odds */
-int hasPillar(vertexID i)
+bool hasPillar(vertexID i)
 {
 	return (get_x(i) + get_y(i)) % 2 == 0;
 }
@@ -135,6 +134,8 @@ bool Subtree::add(vertexID i)
 	
 	/* This is a simpler implementation, though may not be as fast */
 	
+	if (!doesNotEnclose(i)) return false;
+	
 	vertices[i].induced = true;
 	
 	++numInduced;
@@ -148,7 +149,7 @@ bool Subtree::add(vertexID i)
 	{
 		if (exists(x))
 		{
-			if (validate(x) && doesNotEnclose(x))
+			if (validate(x))
 			{
 				return true;
 			}
