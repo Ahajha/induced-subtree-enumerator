@@ -181,6 +181,38 @@ void branch(int id, Subtree& S, std::list<vertexID>& border,
 	}
 	else
 	{
+		unsigned maxBorderSize = 0;
+		do
+		{
+			// Get and remove the first element
+
+			vertexID x = border.front();
+			border.pop_front();
+			lists[id][S.numInduced].push_back(x);
+			
+			// Ensure the addition would be valid
+			if(S.add(x))
+			{
+				previous_actions.push({stop,0});
+				update(S,border,x,previous_actions);
+				
+				if (border.size() > maxBorderSize)
+				{
+					maxBorderSize = border.size();
+				}
+				
+				restore(border,previous_actions);
+				
+				S.rem(x);
+			}
+		}
+		while (!border.empty());
+			
+		std::swap(border, lists[id][S.numInduced]);
+		
+		//std::cout << "Size = " << S.numInduced << ", max border size = "
+		//	<< maxBorderSize << std::endl;
+		
 		do
 		{
 			// Get and remove the first element
@@ -194,13 +226,16 @@ void branch(int id, Subtree& S, std::list<vertexID>& border,
 				previous_actions.push({stop,0});
 				update(S,border,x,previous_actions);
 				
-				if (pool.n_idle() != 0)
+				if (border.size() == maxBorderSize)
 				{
-					pool.push(branch,S,border,previous_actions);
-				}
-				else
-				{
-					branch(id,S,border,previous_actions);
+					if (pool.n_idle() != 0)
+					{
+						pool.push(branch,S,border,previous_actions);
+					}
+					else
+					{
+						branch(id,S,border,previous_actions);
+					}
 				}
 				
 				restore(border,previous_actions);
@@ -239,15 +274,18 @@ int main(int num_args, char** args)
 		
 		pool.push(branch,S,border,previous_actions);
 		
+		//branch(1,S,border,previous_actions);
+		
 		// Would like to make main wait for all threads to finish,
 		// but using pool.wait(true) disallows any future threads
 		// from spawning. For now, let the main continue as is.
 		
 		// This is not the most elegant solution, but it will work for now
-		while (pool.n_idle() < NUM_THREADS)
-		{
-			std::this_thread::sleep_for (std::chrono::seconds(1));
-		}
+	}
+	
+	while (pool.n_idle() < NUM_THREADS)
+	{
+		std::this_thread::sleep_for (std::chrono::seconds(1));
 	}
 	
 	std::clog << threadSeconds() << " thread-seconds" << std::endl;
