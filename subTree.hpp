@@ -24,6 +24,7 @@ struct Subtree
 	// effective degree (which is cnt)
 	
 	unsigned numInduced;
+	unsigned numExcluded;
 	
 	vertexID root;
 	
