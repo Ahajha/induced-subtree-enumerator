@@ -183,7 +183,7 @@ void Subtree::writeToFile(std::string filename) const
 	}
 }
 
-Subtree::Subtree(vertexID r) : numInduced(0), root(r), vertices()
+Subtree::Subtree(vertexID r) : numInduced(0), numExcluded(0), root(r), vertices()
 {
 	for (vertexID x = 0; x < numVertices; x++)
 	{

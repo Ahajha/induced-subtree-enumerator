@@ -66,6 +66,7 @@ void update(Subtree& S, indexedList<numVertices>& border,
 			if (border.remove(y))
 			{
 				previous_actions.push({rem,y});
+				++S.numExcluded;
 			}
 		}
 		else if (y > S.root && !S.has(y))
@@ -77,7 +78,7 @@ void update(Subtree& S, indexedList<numVertices>& border,
 }
 
 // Restores the border of S after removing x.
-void restore(indexedList<numVertices>& border,
+void restore(Subtree& S, indexedList<numVertices>& border,
 	std::stack<action>& previous_actions)
 {
 	while (true)
@@ -97,6 +98,7 @@ void restore(indexedList<numVertices>& border,
 		else /* act.type == rem */
 		{
 			border.push_front(act.v);
+			--S.numExcluded;
 		}
 	}
 }
@@ -148,6 +150,8 @@ void branch(int id, Subtree& S, indexedList<numVertices>& border,
 	}
 	else
 	{
+		unsigned minExcluded = numVertices;
+		
 		do
 		{
 			// Get and remove the first element
@@ -164,16 +168,49 @@ void branch(int id, Subtree& S, indexedList<numVertices>& border,
 				previous_actions.push({stop,0});
 				update(S,border,x,previous_actions);
 				
-				if (pool.n_idle() != 0)
+				if (S.numExcluded < minExcluded)
 				{
-					pool.push(branch,S,border,previous_actions);
-				}
-				else
-				{
-					branch(id,S,border,previous_actions);
+					minExcluded = S.numExcluded;
 				}
 				
-				restore(border,previous_actions);
+				restore(S,border,previous_actions);
+				
+				S.rem(x);
+			}
+		}
+		while (!border.empty());
+		
+		std::swap(border, lists[id][S.numInduced]);
+		
+		do
+		{
+			// Get and remove the first element
+			vertexID x = border.pop_front();
+			
+			// Push it onto a temporary list. This is a fix
+			// to the base algorithm, it will not work without this
+			// (along with the swap below)
+			lists[id][S.numInduced].push_back(x);
+			
+			// Ensure the addition would be valid
+			if(S.add(x))
+			{
+				previous_actions.push({stop,0});
+				update(S,border,x,previous_actions);
+				
+				if (S.numExcluded == minExcluded)
+				{
+					if (pool.n_idle() != 0)
+					{
+						pool.push(branch,S,border,previous_actions);
+					}
+					else
+					{
+						branch(id,S,border,previous_actions);
+					}
+				}
+				
+				restore(S,border,previous_actions);
 				
 				S.rem(x);
 			}
