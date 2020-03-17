@@ -169,6 +169,5 @@ bool Subtree::hasEnclosedSpace() const
 	
 	// If the graph has enclosed space, then there will
 	// be vertices not accounted for in this formula
-	std::cout << numInduced << " " << numConnected << std::endl;
 	return numInduced + numConnected != numVertices;
 }
