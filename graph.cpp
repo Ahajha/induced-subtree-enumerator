@@ -24,6 +24,8 @@ vertexID Graph::_up   (vertexID i)
 
 Graph::graphVertex::graphVertex(vertexID i)
 {
+	enabled = true;
+
 	directions[WEST ] = _west (i);
 	directions[EAST ] = _east (i);
 	
@@ -39,10 +41,38 @@ Graph::graphVertex::graphVertex(vertexID i)
 			neighbors.push_back(n);
 }
 
-Graph::Graph()
+Graph::Graph() : numDisabled(0)
 {
 	for (vertexID i = 0; i < numVertices; i++)
 	{
 		vertices[i] = graphVertex(i);
 	}
+}
+
+void Graph::disable(vertexID i)
+{
+	vertices[i].enabled = false;
+	
+	vertices[vertices[i].directions[EAST ]].directions[WEST ] = EMPTY;
+	vertices[vertices[i].directions[WEST ]].directions[EAST ] = EMPTY;
+	
+	vertices[vertices[i].directions[SOUTH]].directions[NORTH] = EMPTY;
+	vertices[vertices[i].directions[NORTH]].directions[SOUTH] = EMPTY;
+	
+	vertices[vertices[i].directions[DOWN ]].directions[UP   ] = EMPTY;
+	vertices[vertices[i].directions[UP   ]].directions[DOWN ] = EMPTY;
+	
+	for (vertexID n : vertices[i].neighbors)
+	{
+		//vertices[n].neighbors.remove(i);
+		
+		// The way I have to do this seems dumb, but since this
+		// isn't a critical part of the code (performance wise)
+		// this isn't too much of an issue.
+		auto iter = vertices[n].neighbors.begin();
+		while (*iter != i) ++iter;
+		vertices[n].neighbors.erase(iter);
+	}
+	
+	++numDisabled;
 }

@@ -7,7 +7,8 @@
 
 #include "graph.hpp"
 
-extern const Graph G;
+extern const Graph G_orig;
+extern Graph G;
 
 // Represents an induced subtree
 struct Subtree

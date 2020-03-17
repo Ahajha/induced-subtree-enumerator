@@ -119,7 +119,7 @@ bool Subtree::validate(vertexID i) const
 bool Subtree::hasEnclosedSpace() const
 {
 	// enum to mark each vertex
-	enum label { induced, empty, empty_connected };
+	enum label { induced, empty, empty_connected};
 	
 	// Each vertex is labeled one of the above
 	std::array<label, numVertices> vertex_labels;
@@ -127,14 +127,15 @@ bool Subtree::hasEnclosedSpace() const
 	// Initial label is either induced or empty
 	for (vertexID x = 0; x < numVertices; x++)
 	{
+		// Disabled vertices count as empty
 		vertex_labels[x] = has(x) ? induced : empty;
 	}
 	
 	// Queue for breadth-first search
 	std::queue<vertexID> toBeVisited;
 	
-	// For each vertex touching the outer shell of the cube,
-	// queue for searching
+	// For each enabled vertex touching the outer
+	// shell of the cube, queue for searching.
 	for (vertexID x = 0; x < numVertices; x++)
 	{
 		if (onOuterShell(x))
@@ -157,8 +158,9 @@ bool Subtree::hasEnclosedSpace() const
 			
 			++numConnected;
 			
-			// Queue all of x's neighbors
-			for (vertexID y : G.vertices[x].neighbors)
+			// Queue all of x's neighbors. Read from G_orig
+			// to ensure all connections are there.
+			for (vertexID y : G_orig.vertices[x].neighbors)
 			{
 				toBeVisited.push(y);
 			}
@@ -167,5 +169,6 @@ bool Subtree::hasEnclosedSpace() const
 	
 	// If the graph has enclosed space, then there will
 	// be vertices not accounted for in this formula
+	std::cout << numInduced << " " << numConnected << std::endl;
 	return numInduced + numConnected != numVertices;
 }
