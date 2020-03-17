@@ -25,6 +25,7 @@ class Graph
 		// the direction enum below, EMPTY means there
 		// is no vertex in a given direction.
 		
+		bool enabled;
 		std::vector<vertexID> neighbors;
 		std::array <vertexID, 6> directions;
 		
@@ -49,7 +50,11 @@ class Graph
 	// Index of a given vertex is its ID
 	std::array<graphVertex, numVertices> vertices;
 	
+	unsigned numDisabled;
+	
 	Graph();
+	
+	void disable(vertexID);
 	
 	private:
 	

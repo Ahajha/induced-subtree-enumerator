@@ -7,6 +7,7 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <fstream>
 
 #define NUM_THREADS (std::thread::hardware_concurrency())
 
@@ -24,7 +25,10 @@ struct action
 };
 
 // Since there is only one base graph, we can let it be global.
-const Graph G;
+Graph G;
+
+// This is for functions needing the original graph.
+const Graph G_orig;
 
 // Thread pool
 ctpl::thread_pool pool(NUM_THREADS);
@@ -32,8 +36,9 @@ ctpl::thread_pool pool(NUM_THREADS);
 // Maximum size graph seen so far
 unsigned largestTree = 0;
 
+// File to read the starting graph, an induced subgraph of a 3D lattice.
 // File to write the best graph seen so far to
-std::string outfile;
+std::string infile, outfile;
 
 // The start time of the program
 clock_t start_time;
@@ -195,18 +200,47 @@ void branch(int id, Subtree& S, indexedList<numVertices>& border,
 
 int main(int num_args, char** args)
 {
-	if (num_args != 2)
+	if (num_args != 3)
 	{
-		std::cerr << "usage: " << args[0] << " <outfile>" << std::endl;
+		std::cerr << "usage: " << args[0] << " <infile> <outfile>" << std::endl;
 		exit(1);
 	}
 	
-	outfile = args[1];
+	infile  = args[1];
+	outfile = args[2];
 	
+	// Read the input file and disable any vertices that are not induced in the
+	// original subgraph.
+	std::ifstream in(infile);
+	
+	char symbol;
+	vertexID x = 0;
+	for (unsigned i = 0; i < SIZEZ; i++)
+	{
+		for (unsigned j = 0; j < SIZEY; j++)
+		{
+			for (unsigned k = 0; k < SIZEX; k++)
+			{
+				in >> symbol;
+				
+				if (symbol == '_')
+				{
+					G.disable(x);
+				}
+				++x;
+			}
+		}
+	}
+	
+	in.close();
+	
+	// Start the enumeration
 	start_time = clock();
 	
 	for (vertexID x = 0; x < numVertices; x++)
 	{
+		if (!G.vertices[x].enabled) continue;
+	
 		// Makes a subgraph with one vertex, its root.
 		Subtree S(x);
 		
