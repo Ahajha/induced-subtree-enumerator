@@ -15,9 +15,12 @@ struct Subtree
 	struct subTreeVertex
 	{
 		bool induced;
+		bool excluded;
 		unsigned effectiveDegree;
+		unsigned excludedNeighbors;
 		
-		subTreeVertex() : induced(false), effectiveDegree(0) {}
+		subTreeVertex() : induced(false), excluded(false),
+			effectiveDegree(0), excludedNeighbors(0) {}
 	};
 	
 	// Each index is either enabled or disabled, and includes its
@@ -52,6 +55,18 @@ struct Subtree
 	// Returns true iff there is at least one block whose
 	// faces cannot be accessed externally.
 	bool hasEnclosedSpace() const;
+	
+	// A vertex is excluded if its effective degree is at least
+	// 2 and it is not induced, or if all of its neighbors are
+	// excluded (and it is not induced).
+	// If either of these is true, marks i as excluded.
+	// Recursively marks any other vertices that should be excluded.
+	void exclude(vertexID i);
+	
+	// Removes the exclusion marker from a vertex, if both of the
+	// above conditions are false.
+	// Recurisively unmarks other vertices.
+	void unexclude(vertexID i);
 };
 
 #endif

@@ -64,7 +64,6 @@ void update(Subtree& S, indexedList<numVertices>& border,
 			if (border.remove(y))
 			{
 				previous_actions.push({rem,y});
-				++S.numExcluded;
 			}
 		}
 		else if (y > S.root && !S.has(y))
@@ -96,7 +95,6 @@ void restore(Subtree& S, indexedList<numVertices>& border,
 		else /* act.type == rem */
 		{
 			border.push_front(act.v);
-			--S.numExcluded;
 		}
 	}
 }

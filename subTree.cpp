@@ -48,6 +48,13 @@ bool Subtree::add(vertexID i)
 		if (!has(x))
 			++vertices[x].effectiveDegree;
 	}
+	
+	// Try to exclude any vertices
+	for (const vertexID x : G.vertices[i].neighbors)
+	{
+		exclude(x);
+	}
+	
 	return true;
 }
 
@@ -60,6 +67,11 @@ void Subtree::rem(vertexID i)
 	for (const vertexID x : G.vertices[i].neighbors)
 	{
 		--vertices[x].effectiveDegree;
+	}
+	
+	for (const vertexID x : G.vertices[i].neighbors)
+	{
+		unexclude(x);
 	}
 }
 
@@ -168,4 +180,42 @@ bool Subtree::hasEnclosedSpace() const
 	// If the graph has enclosed space, then there will
 	// be vertices not accounted for in this formula
 	return numInduced + numConnected != numVertices;
+}
+
+void Subtree::exclude(vertexID i)
+{
+	if (vertices[i].induced || vertices[i].excluded) return;
+
+	// A vertex is excluded if its effective degree is at least
+	// 2 or if all of its neighbors are excluded.
+	if (cnt(i) > 1 ||
+		vertices[i].excludedNeighbors == G.vertices[i].neighbors.size())
+	{
+		++numExcluded;
+		vertices[i].excluded = true;
+		
+		for (vertexID x : G.vertices[i].neighbors)
+			++vertices[x].excludedNeighbors;
+		for (vertexID x : G.vertices[i].neighbors)
+			exclude(x);
+	}
+}
+
+void Subtree::unexclude(vertexID i)
+{
+	if (!vertices[i].excluded) return;
+
+	// A vertex is excluded if its effective degree is at least
+	// 2 or if all of its neighbors are excluded.
+	if (cnt(i) <= 1 ||
+		vertices[i].excludedNeighbors < G.vertices[i].neighbors.size())
+	{
+		--numExcluded;
+		vertices[i].excluded = false;
+		
+		for (vertexID x : G.vertices[i].neighbors)
+			--vertices[x].excludedNeighbors;
+		for (vertexID x : G.vertices[i].neighbors)
+			unexclude(x);
+	}
 }
