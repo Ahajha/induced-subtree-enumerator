@@ -4,15 +4,28 @@
 # OR
 # make analyze file=<infile>
 
+# make run file=<infile>
+
 # If only size is defined, then define the individual side
 # lengths to be that size.
-ifdef size
+#ifdef size
 
-sizeX=$(size)
-sizeY=$(size)
-sizeZ=$(size)
+#sizeX=$(size)
+#sizeY=$(size)
+#sizeZ=$(size)
 
-endif
+#endif
+
+#ifeq ("$(wildcard $(DIR_TO_CHECK_FOR))", "")
+#	$(shell echo $(file) does not exist)
+#	exit
+#endif
+
+contents=$(shell cat $(file))
+
+sizeX=$(word 1,$(contents))
+sizeY=$(word 2,$(contents))
+sizeZ=$(word 3,$(contents))
 
 sizeString=$(sizeX)_$(sizeY)_$(sizeZ)
 
@@ -38,7 +51,7 @@ perf: $(TE_efile)
 	if [ ! -d results ]; then mkdir results; fi
 	perf record ./$(TE_efile) results/results_$(sizeString).txt
 
-$(TE_efile): $(ST_ofile) $(TE_ofile)
+$(TE_efile): $(ST_ofile) $(TE_ofile) $(file)
 	if [ ! -d obj ]; then mkdir obj; fi
 	$(CC) $(CFLAGS) $(ST_ofile) $(TE_ofile) $(GH_ofile) -o $(TE_efile)
 
