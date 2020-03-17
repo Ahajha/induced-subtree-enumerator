@@ -5,3 +5,4 @@ bin
 obj
 results
 perf.data*
+subgraphs/*
