@@ -45,11 +45,11 @@ all: $(TE_efile)
 
 run: $(TE_efile)
 	if [ ! -d results ]; then mkdir results; fi
-	./$(TE_efile) results/results_$(sizeString).txt
+	./$(TE_efile) $(file) results/results_$(sizeString).txt
 
 perf: $(TE_efile)
 	if [ ! -d results ]; then mkdir results; fi
-	perf record ./$(TE_efile) results/results_$(sizeString).txt
+	perf record ./$(TE_efile) $(file) results/results_$(sizeString).txt
 
 $(TE_efile): $(ST_ofile) $(TE_ofile) $(file)
 	if [ ! -d obj ]; then mkdir obj; fi
