@@ -193,6 +193,35 @@ void branch(int id, Subtree& S, indexedList<numVertices>& border,
 	}
 }
 
+unsigned longestPath = 0;
+
+bool Xused = false, Yused = false;
+
+void pathBranch(Subtree& S, vertexID root, vertexID lastAdded)
+{
+	for (unsigned i = 1; i < S.numInduced; i++)
+		std::cout << '-';
+	std::cout << lastAdded << std::endl;
+
+	if (S.numInduced > longestPath)
+	{
+		longestPath = S.numInduced;
+		//std::cout << longestPath << std::endl;
+	}
+
+	for (vertexID x : G.vertices[lastAdded].neighbors)
+	{
+		if (x > root && S.cnt(x) == 1)
+		{
+			S.add(x);
+			
+			pathBranch(S,root,x);
+			
+			S.rem(x);
+		}
+	}
+}
+
 int main(int num_args, char** args)
 {
 	if (num_args != 2)
@@ -210,13 +239,15 @@ int main(int num_args, char** args)
 		// Makes a subgraph with one vertex, its root.
 		Subtree S(x);
 		
-		indexedList<numVertices> border;
+		pathBranch(S,x,x);
 		
-		std::stack<action> previous_actions;
+		//indexedList<numVertices> border;
 		
-		update(S,border,x,previous_actions);
+		//std::stack<action> previous_actions;
 		
-		pool.push(branch,S,border,previous_actions);
+		//update(S,border,x,previous_actions);
+		
+		//pool.push(branch,S,border,previous_actions);
 	}
 	
 	// Wait for all threads to finish
@@ -239,7 +270,6 @@ int main(int num_args, char** args)
 		mutex.unlock();
 	}
 	
-	std::clog << threadSeconds() << " thread-seconds" << std::endl;
-	
-	std::clog << "Largest size = " << largestTree << std::endl;
+	std::clog << std::endl << threadSeconds() << " thread-seconds, "
+		<< "Largest size = " << longestPath << std::endl;
 }

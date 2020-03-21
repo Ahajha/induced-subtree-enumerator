@@ -20,6 +20,7 @@ bool onOuterShell(vertexID i)
 
 bool Subtree::add(vertexID i)
 {
+	/*
 	vertices[i].induced = true;
 	
 	// This should have one neighbor, we need to validate the neighbor
@@ -48,6 +49,18 @@ bool Subtree::add(vertexID i)
 		if (!has(x))
 			++vertices[x].effectiveDegree;
 	}
+	return true;
+	*/
+	
+	vertices[i].induced = true;
+	
+	++numInduced;
+	
+	for (const vertexID x : G.vertices[i].neighbors)
+	{
+		++vertices[x].effectiveDegree;
+	}
+	
 	return true;
 }
 
